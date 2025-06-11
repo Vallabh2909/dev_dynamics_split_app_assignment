@@ -451,7 +451,7 @@ All API responses follow a consistent format:
 
 ### Adding an expense with equal split
 ```bash
-curl -X POST http://localhost:3000/api/expenses \
+curl -X POST https://dev-dynamics-split-app-assignment.onrender.com/api/expenses \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 120.00,
@@ -465,12 +465,12 @@ curl -X POST http://localhost:3000/api/expenses \
 
 ### Getting user balances
 ```bash
-curl -X GET http://localhost:3000/api/balances
+curl -X GET https://dev-dynamics-split-app-assignment.onrender.com/api/balances
 ```
 
 ### Updating an expense
 ```bash
-curl -X PUT http://localhost:3000/api/expenses/expense_id \
+curl -X PUT https://dev-dynamics-split-app-assignment.onrender.com/api/expenses/expense_id \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 150.00,
