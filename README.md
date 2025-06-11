@@ -1,5 +1,8 @@
 # Expense Tracker API Documentation
 
+## Dashboard at
+[https://dev-dynamics-split-app-assignment.onrender.com/dashboard.html](https://dev-dynamics-split-app-assignment.onrender.com/dashboard.html)
+
 ## Base URL
 ```
 https://dev-dynamics-split-app-assignment.onrender.com/api
