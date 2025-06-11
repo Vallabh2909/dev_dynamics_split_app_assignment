@@ -1,13 +1,16 @@
 import express from "express";
 import mongoose from "mongoose";
 import expenseRoutes from "./routes/expense.route.js";
+import settlementRoutes from "./routes/settlement.route.js";
 import dotenv from "dotenv";
 
 dotenv.config();
 const app = express();
+app.use(express.static("views")); // serve HTML files
 
 app.use(express.json());
 app.use("/api", expenseRoutes);
+app.use("/api", settlementRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI|| 'mongodb://localhost:27017/expense_tracker')

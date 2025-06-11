@@ -1,10 +1,12 @@
 import Expense from "../models/expense.model.js";
+import Settlement from "../models/settlement.model.js";
+import { calculateSettlementsForExpense } from "../utils/settlement.util.js";
 
 class ExpenseController {
   // GET /expenses
   static async getAllExpenses(req, res) {
     try {
-      const expenses = await Expense.find().sort({ created_at: -1 });
+      const expenses = await Expense.find().sort({ createdAt: -1 });
       res.status(200).json({
         success: true,
         data: expenses,
@@ -22,10 +24,15 @@ class ExpenseController {
       await newExpense.validate(); // schema validations
       const saved = await newExpense.save();
 
+      // Generate settlements for this expense
+      const settlements = calculateSettlementsForExpense(saved);
+      settlements.forEach((s) => (s.expenseId = saved._id));
+      await Settlement.insertMany(settlements);
+
       res.status(201).json({
         success: true,
         data: saved,
-        message: "Expense added successfully",
+        message: "Expense added and settlements created successfully",
       });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });
@@ -33,7 +40,7 @@ class ExpenseController {
   }
 
   // PUT /expenses/:id
-  static async updateExpense(req, res) {
+   static async updateExpense(req, res) {
     try {
       const existing = await Expense.findById(req.params.id);
       if (!existing) {
@@ -43,15 +50,32 @@ class ExpenseController {
         });
       }
 
-      // Update fields
-      Object.assign(existing, req.body);
-      await existing.validate(); // validate updated data
+      // Only allow these fields to be updated
+      const allowedFields = ["amount", "participants", "split_type", "split_details"];
+
+      // Apply only allowed fields — preserve old values if not provided
+      allowedFields.forEach((field) => {
+        if (req.body[field] !== undefined) {
+          existing[field] = req.body[field];
+        }
+      });
+
+      // ✅ Now validate the real, updated document (with original or new values)
+      await existing.validate();
+
+      // ❗Only proceed after successful validation
+      await Settlement.deleteMany({ expenseId: existing._id });
+
       const updated = await existing.save();
+
+      const settlements = calculateSettlementsForExpense(updated);
+      settlements.forEach((s) => (s.expenseId = updated._id));
+      await Settlement.insertMany(settlements);
 
       res.status(200).json({
         success: true,
         data: updated,
-        message: "Expense updated successfully",
+        message: "Expense updated and settlements recalculated successfully",
       });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });
@@ -69,10 +93,13 @@ class ExpenseController {
         });
       }
 
+      // Delete related settlements
+      await Settlement.deleteMany({ expenseId: deleted._id });
+
       res.status(200).json({
         success: true,
         data: deleted,
-        message: "Expense deleted successfully",
+        message: "Expense and its settlements deleted successfully",
       });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });

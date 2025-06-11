@@ -68,30 +68,6 @@ const ExpenseSchema = new mongoose.Schema(
 // Helper to round to 2 decimals
 const roundTo2 = (num) => Math.floor(num * 100) / 100;
 
-// ✅ Validate users before saving
-ExpenseSchema.pre("validate", async function (next) {
-  const expense = this;
-  try {
-    const userNames = await User.find({
-      name: { $in: [expense.paid_by, ...expense.participants] },
-    }).select("name");
-
-    const existingNames = userNames.map((u) => u.name);
-    const missing = [expense.paid_by, ...expense.participants].filter(
-      (n) => !existingNames.includes(n)
-    );
-
-    if (missing.length > 0) {
-      return next(
-        new Error(`These users do not exist: ${missing.join(", ")}`)
-      );
-    }
-
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
 
 // ✅ Validate and populate split_details + participants_paid
 ExpenseSchema.pre("save", function (next) {
