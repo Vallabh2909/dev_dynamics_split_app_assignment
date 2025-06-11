@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-http://localhost:3000/api
+https://dev-dynamics-split-app-assignment.onrender.com/api
 ```
 
 ## Response Format
